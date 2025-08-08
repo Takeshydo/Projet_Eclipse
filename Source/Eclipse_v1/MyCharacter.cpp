@@ -1,4 +1,5 @@
 #include "MyCharacter.h"
+#include "Ennemy.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -147,7 +148,7 @@ void AMyCharacter::StopRun() {
 void AMyCharacter::ToggleFocus() {
 
 	if (IsLocked) {
-		UE_LOG(LogTemp, Warning, TEXT("Délock sur la cible."));
+		UE_LOG(LogTemp, Warning, TEXT("Delock sur la cible."));
 		LockedTarget = nullptr;
 		IsLocked = false;
 
@@ -161,6 +162,7 @@ void AMyCharacter::ToggleFocus() {
 
 		if (LockedTarget) {
 			// Active la rotation contrôleur sur personnage et caméra
+			IsLocked = true;
 			bUseControllerRotationYaw = true;
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 			Camera->bUsePawnControlRotation = true;
@@ -168,22 +170,19 @@ void AMyCharacter::ToggleFocus() {
 	}
 }
 void AMyCharacter::FindTargetToLock() {
+	
 	FVector Start = GetActorLocation();
-	float LockRange = 1000.0f;
+	float LockRange = 2000.0f;
 	float BestDistance = LockRange;
 
-	AActor* BestTarget = nullptr;
+	AEnnemy* BestTarget = nullptr;
 
+	for (TActorIterator<AEnnemy> It(GetWorld()); It; ++It) {
+		AEnnemy* Candidate = *It;
 
-	for (TActorIterator<AActor> It(GetWorld(), AActor::StaticClass()); It; ++It) {
-		
-		AActor* Candidate = *It;
-
-		if (Candidate == this) continue;
-		if (!Candidate->ActorHasTag("Enemy")) continue;
+		if (Candidate == Cast<AEnnemy>(this)) continue; // Sécurité
 
 		float Dist = FVector::Dist(Candidate->GetActorLocation(), Start);
-
 		if (Dist < BestDistance) {
 			BestDistance = Dist;
 			BestTarget = Candidate;
@@ -191,7 +190,6 @@ void AMyCharacter::FindTargetToLock() {
 	}
 
 	LockedTarget = BestTarget;
-	IsLocked = true;
 }
 
 
