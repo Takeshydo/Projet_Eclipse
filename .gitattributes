@@ -1,0 +1,4 @@
+*[[:space:]].uasset filter=lfs diff=lfs merge=lfs -text
+*[[:space:]].umap filter=lfs diff=lfs merge=lfs -text
+*[[:space:]].png filter=lfs diff=lfs merge=lfs -text
+*[[:space:]].mp4 filter=lfs diff=lfs merge=lfs -text
