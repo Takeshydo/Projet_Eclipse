@@ -148,7 +148,6 @@ void AMyCharacter::StopRun() {
 void AMyCharacter::ToggleFocus() {
 
 	if (IsLocked) {
-		UE_LOG(LogTemp, Warning, TEXT("Delock sur la cible."));
 		LockedTarget = nullptr;
 		IsLocked = false;
 
@@ -157,7 +156,6 @@ void AMyCharacter::ToggleFocus() {
 		Camera->bUsePawnControlRotation = false;
 	}
 	else {
-		UE_LOG(LogTemp, Warning, TEXT("Tentative de lock..."));
 		FindTargetToLock();
 
 		if (LockedTarget) {
@@ -172,7 +170,7 @@ void AMyCharacter::ToggleFocus() {
 void AMyCharacter::FindTargetToLock() {
 	
 	FVector Start = GetActorLocation();
-	float LockRange = 2000.0f;
+	float LockRange = 1000.0f;
 	float BestDistance = LockRange;
 
 	AEnnemy* BestTarget = nullptr;
