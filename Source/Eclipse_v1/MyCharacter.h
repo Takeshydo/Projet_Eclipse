@@ -1,11 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
+//Declaration Lourd | Importe tous ce que contient le fichier |Pratique lors d'utilisation de Fonction provenant du Fichier
 #include "CoreMinimal.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Character.h"
 #include "MyCharacter.generated.h"
+
+//Foward Declaration | déclaration plus légère que les include |Pratique quand on veut juste un Réf 
+class UCombatUI;
 
 UCLASS()
 class ECLIPSE_V1_API AMyCharacter : public ACharacter
@@ -52,4 +55,9 @@ protected:
 	UPROPERTY()
 	AActor* LockedTarget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UCombatUI> CombatUIClass;
+
+	UPROPERTY()
+	UCombatUI* CombatUIInstance;
 };

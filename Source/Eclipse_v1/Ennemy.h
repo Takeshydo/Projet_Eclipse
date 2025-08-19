@@ -29,5 +29,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float HealthPoint;
-
+	FString EnemyName;
+	int Enemylvl;
 };

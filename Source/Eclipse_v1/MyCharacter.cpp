@@ -1,5 +1,7 @@
+
 #include "MyCharacter.h"
 #include "Ennemy.h"
+#include "CombatUI.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -154,6 +156,12 @@ void AMyCharacter::ToggleFocus() {
 		bUseControllerRotationYaw = false;
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		Camera->bUsePawnControlRotation = false;
+
+		//Suppression de l'UI
+		if (CombatUIInstance && CombatUIInstance->IsInViewport())
+		{
+			CombatUIInstance->RemoveFromParent();
+		}
 	}
 	else {
 		FindTargetToLock();
@@ -164,6 +172,27 @@ void AMyCharacter::ToggleFocus() {
 			bUseControllerRotationYaw = true;
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 			Camera->bUsePawnControlRotation = true;
+			//Active l'UI 
+			if (IsLocked) {
+				APlayerController* PC_ID = GetController<APlayerController>();
+				UE_LOG(LogTemp, Warning, TEXT("CombatUIClass: %s"), *GetNameSafe(CombatUIClass));
+				if (PC_ID && CombatUIClass)
+				{
+					CombatUIInstance = CreateWidget<UCombatUI>(PC_ID, CombatUIClass);
+					UE_LOG(LogTemp, Warning, TEXT("Good"));
+				}
+				if (CombatUIInstance) {
+					if (!CombatUIInstance->IsInViewport())
+					{
+						CombatUIInstance->AddToViewport();
+						
+					}
+
+					CombatUIInstance->UpdateEnemyUI(LockedTarget);
+					
+
+				}
+			}
 		}
 	}
 }
