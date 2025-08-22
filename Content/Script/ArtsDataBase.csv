@@ -1,0 +1,4 @@
+RowName,ArtID,ArtName,Icon,Damage,CoolDown,Element,Type,bUnlocked
+slas,1,Vertical Slash,/Game/UI_Combat/UI_Combat_Assets/Art_tranchant.Art_tranchant,25,7,Row,Tranchant,true
+perce,2,Horizontal Perce,/Game/UI_Combat/UI_Combat_Assets/Art_perce.Art_perce,15,10,Row,Percent,true
+heal,3,Fire Heal,/Game/UI_Combat/UI_Combat_Assets/Art_Support.Art_Support,-30,15,Fire,Support,true

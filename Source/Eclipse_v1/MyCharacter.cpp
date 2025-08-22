@@ -2,6 +2,7 @@
 #include "MyCharacter.h"
 #include "Ennemy.h"
 #include "CombatUI.h"
+#include "CombatRadialUI.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -101,6 +102,9 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	//Input Lock
 	PlayerInputComponent->BindAction("FocusE", IE_Pressed, this, &AMyCharacter::ToggleFocus);
 
+	//Input RadialMenu
+	PlayerInputComponent->BindAxis("NavigationControl", this, &AMyCharacter::OnRadialNavigation);
+
 }
 
 
@@ -147,9 +151,13 @@ void AMyCharacter::StopRun() {
 
 
 //Focus Lock, Comme Xenoblade
-void AMyCharacter::ToggleFocus() {
+void AMyCharacter::ToggleFocus()
+{
+	APlayerController* PC_ID = GetController<APlayerController>();
 
-	if (IsLocked) {
+	if (IsLocked)
+	{
+		// --- Déverrouillage du focus ---
 		LockedTarget = nullptr;
 		IsLocked = false;
 
@@ -157,47 +165,60 @@ void AMyCharacter::ToggleFocus() {
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		Camera->bUsePawnControlRotation = false;
 
-		//Suppression de l'UI
-		if (CombatUIInstance && CombatUIInstance->IsInViewport())
+		// --- Suppression des widgets ---
+		if (CombatUIInstance)
 		{
 			CombatUIInstance->RemoveFromParent();
+			CombatUIInstance = nullptr;
+		}
+
+		if (RadialMenuInstance)
+		{
+			RadialMenuInstance->RemoveFromParent();
+			RadialMenuInstance = nullptr;
 		}
 	}
-	else {
+	else
+	{
+		// --- Recherche de la cible ---
 		FindTargetToLock();
 
-		if (LockedTarget) {
-			// Active la rotation contrôleur sur personnage et caméra
+		if (LockedTarget && PC_ID)
+		{
 			IsLocked = true;
+
 			bUseControllerRotationYaw = true;
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 			Camera->bUsePawnControlRotation = true;
-			//Active l'UI 
-			if (IsLocked) {
-				APlayerController* PC_ID = GetController<APlayerController>();
-				UE_LOG(LogTemp, Warning, TEXT("CombatUIClass: %s"), *GetNameSafe(CombatUIClass));
-				if (PC_ID && CombatUIClass)
-				{
-					CombatUIInstance = CreateWidget<UCombatUI>(PC_ID, CombatUIClass);
-					UE_LOG(LogTemp, Warning, TEXT("Good"));
-				}
-				if (CombatUIInstance) {
-					if (!CombatUIInstance->IsInViewport())
-					{
-						CombatUIInstance->AddToViewport();
-						
-					}
 
-					CombatUIInstance->UpdateEnemyUI(LockedTarget);
-					
+			// --- Création des widgets si classes valides ---
+			if (CombatUIClass && !CombatUIInstance)
+			{
+				CombatUIInstance = CreateWidget<UCombatUI>(PC_ID, CombatUIClass);
+			}
 
-				}
+			if (RadialMenuClass && !RadialMenuInstance)
+			{
+				RadialMenuInstance = CreateWidget<UCombatRadialUI>(PC_ID, RadialMenuClass);
+			}
+
+			// --- Ajout à l'écran ---
+			if (CombatUIInstance && !CombatUIInstance->IsInViewport())
+			{
+				CombatUIInstance->AddToViewport();
+				CombatUIInstance->UpdateEnemyUI(LockedTarget);
+			}
+
+			if (RadialMenuInstance && !RadialMenuInstance->IsInViewport())
+			{
+				RadialMenuInstance->AddToViewport();
+				RadialMenuInstance->InitializeFromDataTable(ArtTable);
 			}
 		}
 	}
 }
-void AMyCharacter::FindTargetToLock() {
-	
+void AMyCharacter::FindTargetToLock() 
+{
 	FVector Start = GetActorLocation();
 	float LockRange = 1000.0f;
 	float BestDistance = LockRange;
@@ -207,7 +228,7 @@ void AMyCharacter::FindTargetToLock() {
 	for (TActorIterator<AEnnemy> It(GetWorld()); It; ++It) {
 		AEnnemy* Candidate = *It;
 
-		if (Candidate == Cast<AEnnemy>(this)) continue; // Sécurité
+		if (Candidate == Cast<AActor>(this)) continue; // Ignore soi-même
 
 		float Dist = FVector::Dist(Candidate->GetActorLocation(), Start);
 		if (Dist < BestDistance) {
@@ -217,6 +238,21 @@ void AMyCharacter::FindTargetToLock() {
 	}
 
 	LockedTarget = BestTarget;
+}
+
+void AMyCharacter::OnRadialNavigation(float Value) {
+	if (!RadialMenuInstance) return;
+	if (GetWorld()->GetTimeSeconds() - TimeSinceLastRadialInput < RadialInputCD) return;
+
+	if (Value > 0.5f) {
+		RadialMenuInstance->HandleKey(EKeys::Gamepad_DPad_Right);
+		TimeSinceLastRadialInput = GetWorld()->GetTimeSeconds();
+	}
+
+	if (Value < -0.5f) {
+		RadialMenuInstance->HandleKey(EKeys::Gamepad_DPad_Left);
+		TimeSinceLastRadialInput = GetWorld()->GetTimeSeconds();
+	}
 }
 
 

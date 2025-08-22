@@ -9,7 +9,7 @@
 
 //Foward Declaration | déclaration plus légère que les include |Pratique quand on veut juste un Réf 
 class UCombatUI;
-
+class UCombatRadialUI;
 UCLASS()
 class ECLIPSE_V1_API AMyCharacter : public ACharacter
 {
@@ -38,11 +38,16 @@ public:
 	void StopRun();
 	void ToggleFocus();
 	void FindTargetToLock();
+	void OnRadialNavigation(float Value);
 
 
 	// Vérif d'état de paramètre 
 	bool IsRunning;
 	bool IsLocked;
+
+	//Variable de sécu RAdial
+	float TimeSinceLastRadialInput = 0.0f;
+	float RadialInputCD = 0.2f;
 
 protected:
 
@@ -60,4 +65,13 @@ protected:
 
 	UPROPERTY()
 	UCombatUI* CombatUIInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UCombatRadialUI>RadialMenuClass;
+	
+	UPROPERTY()
+	UCombatRadialUI* RadialMenuInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RadialMenu")
+	UDataTable* ArtTable;
 };
